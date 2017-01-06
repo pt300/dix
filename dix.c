@@ -16,7 +16,7 @@ screen_t screen = {};
 
 dix_status_t init_dix() {
 	CONSOLE_SCREEN_BUFFER_INFO info;
-	SHORT width, height;
+	UINT width, height;
 
 	if((screen.console = GetConsoleWindow()) == NULL ||
 	   (screen.old_buffer = GetStdHandle(STD_OUTPUT_HANDLE)) == NULL) {
@@ -25,8 +25,8 @@ dix_status_t init_dix() {
 
 	GetConsoleScreenBufferInfo(screen.old_buffer, &info);
 
-	width = (SHORT) (info.srWindow.Right - info.srWindow.Left + 1);
-	height = (SHORT) (info.srWindow.Bottom - info.srWindow.Top + 1);
+	width = (UINT) (info.srWindow.Right - info.srWindow.Left + 1);
+	height = (UINT) (info.srWindow.Bottom - info.srWindow.Top + 1);
 
 	screen.buffer = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleActiveScreenBuffer(screen.buffer);
@@ -48,69 +48,52 @@ void deinit_dix() {
 	CloseHandle(screen.old_buffer);
 }
 
-static void normalize_size(COORD *max, SMALL_RECT *rekt, SHORT desired_x, SHORT desired_y) {
-	rekt->Right = (SHORT) (desired_x < max->X ? desired_x : max->X);
-	rekt->Bottom = (SHORT) (desired_y < max->Y ? desired_y : max->Y);
-}
-
 /*
- * do something
+ * So, the thing is
+ * width and height of buffer cannot be less than the width and height of the console window
  */
-dix_status_t set_screen_size(SHORT width, SHORT height) {
+dix_status_t set_screen_size(UINT width, UINT height) {
 	CONSOLE_SCREEN_BUFFER_INFO info;
-	COORD size = {.X = width, .Y = height};
-	COORD max;
+	COORD size, max;
 	SMALL_RECT rekt = {.Left = 0, .Top = 0};
+
 
 	if(width < 2 ||
 	   height < 2) {
 		return RIP;
 	}
 
-	screen.width = width;
-	screen.height = height;
-
 	max = GetLargestConsoleWindowSize(screen.buffer);
+
+	size.X = min(width, max.X);
+	rekt.Right = (SHORT) (size.X - 1);
+	screen.width = (UINT) size.X;
+
 	GetConsoleScreenBufferInfo(screen.buffer, &info);
-	if(width > info.dwSize.X) {
-		if(height > info.dwSize.Y) {
-			SetConsoleScreenBufferSize(screen.buffer, size);
-			normalize_size(&max, &rekt, (SHORT) (width - 1), (SHORT) (height - 1));
-			SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
-		}
-		else {
-			size.Y = info.dwSize.Y;
-			rekt.Bottom = (SHORT) (info.dwSize.Y - 1);
-			SetConsoleScreenBufferSize(screen.buffer, size);
-			normalize_size(&max, &rekt, (SHORT) (width - 1), (SHORT) (info.dwSize.Y - 1));
-			SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
 
-			size.Y = height;
-			rekt.Bottom = (SHORT) (height - 1);
-			normalize_size(&max, &rekt, (SHORT) (width - 1), (SHORT) (height - 1));
-			SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
-			SetConsoleScreenBufferSize(screen.buffer, size);
-		}
+	size.Y = info.dwSize.Y;
+	rekt.Bottom = (SHORT) (info.dwSize.Y - 1);
+
+	if(screen.width > info.dwSize.X) { //if buffer will be larger
+		SetConsoleScreenBufferSize(screen.buffer, size);
+		SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
 	}
-	else {
-		if(height < info.dwSize.Y) {
-			normalize_size(&max, &rekt, (SHORT) (width - 1), (SHORT) (height - 1));
-			SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
-			SetConsoleScreenBufferSize(screen.buffer, size);
-		}
-		else {
-			size.X = info.dwSize.X;
-			rekt.Right = (SHORT) (info.dwSize.X - 1);
-			SetConsoleScreenBufferSize(screen.buffer, size);
-			normalize_size(&max, &rekt, (SHORT) (info.dwSize.X - 1), (SHORT) (height - 1));
-			SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
+	else if(screen.width != info.dwSize.X) { //and if smaller
+		SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
+		SetConsoleScreenBufferSize(screen.buffer, size);
+	}
 
-			size.X = width;
-			rekt.Right = (SHORT) (width - 1);
-			normalize_size(&max, &rekt, (SHORT) (width - 1), (SHORT) (height - 1));
-			SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
-			SetConsoleScreenBufferSize(screen.buffer, size);
-		}
+	size.Y = min(height, max.Y);
+	rekt.Bottom = (SHORT) (size.Y - 1);
+	screen.height = (UINT) size.Y;
+
+	if(screen.height > info.dwSize.Y) {
+		SetConsoleScreenBufferSize(screen.buffer, size);
+		SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
+	}
+	else if(screen.height != info.dwSize.Y) {
+		SetConsoleWindowInfo(screen.buffer, TRUE, &rekt);
+		SetConsoleScreenBufferSize(screen.buffer, size);
 	}
 
 	return OK;
@@ -143,7 +126,7 @@ void view_set_pos_relative(view_t *view, int x, int y) {
 }
 
 view_t *create_view(UINT x, UINT y, UINT width, UINT height) {
-	view_t *view = calloc(1, sizeof *view);
+	view_t *view = malloc(sizeof *view);
 
 	view->x = x;
 	view->y = y;
@@ -218,15 +201,14 @@ void render(view_t *view) {
 		y += win->y;
 	}
 
-	width = min(out.width, screen.width - x);
-	height = min(out.height, screen.height - y);
+	width = (SHORT) min(out.width, screen.width - x);
+	height = (SHORT) min(out.height, screen.height - y);
 
 	for(row = 0; row < height; row++) {
 		cursor.X = x;
 		cursor.Y = y + row;
-		//SetConsoleCursorPosition(screen->buffer, cursor);
-		//WriteConsole(screen->buffer, out.buff + row * out.width, width, &DONTCARE, NULL);
-		WriteConsoleOutputCharacterW(screen.buffer, out.buff + row * out.width, width, cursor, &DONTCARE);
+
+		WriteConsoleOutputCharacterW(screen.buffer, out.buff + row * out.width, (DWORD) width, cursor, &DONTCARE);
 	}
 
 	free(out.buff);
