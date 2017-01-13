@@ -20,17 +20,15 @@ void render_buffer(view_t *view, render_buf_t *out) {
 	if(max_x - x > data->width) {
 		x += (width - data->width) / 2;
 		width = data->width;
-		max_x = x + width;
 	}
 
 	if(max_y - y > data->height) {
 		y += (height - data->height) / 2;
 		height = data->height;
-		max_y = y + height;
 	}
 
-	for(i = 0; i < max_y - y; i++) {
-		wmemcpy(out->buff + x, data->data + data->width * i, width);
+	for(i = 0; i < height; i++) {
+		wmemcpy(out->buff + x + (i + y) * out->width, data->data + data->width * i, width);
 	}
 
 }
@@ -45,9 +43,9 @@ view_t *create_buffer_view(UINT x, UINT y, UINT width, UINT height) {
 	buffer_data_t *data;
 
 	data = calloc(1, sizeof *data);
-	data->width = 10;
-	data->height = 10;
-	data->data = calloc(10 * 10, sizeof *data->data);
+	data->width = width;
+	data->height = height;
+	data->data = calloc(width * height, sizeof *data->data);
 
 	view_set_data(view, data);
 	view_set_render_function(view, render_buffer);
