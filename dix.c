@@ -99,6 +99,12 @@ dix_status_t set_screen_size(UINT width, UINT height) {
 	return OK;
 }
 
+void set_cursor_position(UINT x, UINT y) {
+	COORD pos = {.X = (SHORT) x, .Y = (SHORT) y};
+
+	SetConsoleCursorPosition(screen.buffer, pos);
+}
+
 void set_screen_title(WCHAR *title) {
 	SetConsoleTitleW(title);
 }

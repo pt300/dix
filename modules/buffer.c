@@ -71,5 +71,5 @@ void buffer_view_set_data(view_t *view, WCHAR *data) {
 	buffer_data_t *vdata;
 
 	vdata = view_get_data(view);
-	memcpy(vdata->data, data, vdata->width * vdata->height * sizeof vdata->data);
+	wmemcpy(vdata->data, data, vdata->width * vdata->height);
 }

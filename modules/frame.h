@@ -3,6 +3,15 @@
 
 #include "../dix.h"
 
+/*
+ * implement
+ */
+typedef enum {
+	ONECHAR,
+	SIDES,
+	SIDESANDCORNERS
+} border_style_t;
+
 view_t *create_frame_view(UINT x, UINT y, UINT width, UINT height);
 void frame_view_border(view_t *view, boolean enable);
 void frame_view_border_char(view_t *view, WCHAR character);

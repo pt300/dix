@@ -34,6 +34,7 @@ struct view_struct {
 dix_status_t init_dix();
 void deinit_dix();
 dix_status_t set_screen_size(UINT width, UINT height);
+void set_cursor_position(UINT x, UINT y);
 void set_screen_title(WCHAR *title);
 view_t *attach_to_screen(view_t *view);
 
