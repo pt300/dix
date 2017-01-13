@@ -63,7 +63,13 @@ void render_frame(view_t *view, render_buf_t *out) {
 }
 
 void destroy_frame(void *data) {
-	free(((frame_data_t *) data)->children);
+	frame_data_t *vdata;
+	UINT i;
+
+	for(i = 0, vdata = data; i < vdata->child_count; i++) {
+		destroy_view(vdata->children[i]);
+	}
+	free(vdata->children);
 	free(data);
 }
 
@@ -122,10 +128,7 @@ BOOLEAN frame_view_removev(view_t *view, view_t *child) {
 }
 
 BOOLEAN frame_view_destroyv(view_t *view, view_t *child) {
-	frame_data_t *data;
 	BOOLEAN removed;
-
-	data = view_get_data(view);
 
 	if((removed = frame_view_removev(view, child)) == TRUE) {
 		destroy_view(child);
@@ -149,7 +152,7 @@ void frame_view_destroyv_all(view_t *view) {
 
 	data = view_get_data(view);
 
-	for(i = data->child_count; i != 0; i--) {
+	for(i = 0; i < data->child_count; i++) {
 		destroy_view(data->children[i]);
 	}
 
