@@ -4,5 +4,5 @@ project(dix C)
 
 set(CMAKE_C_STANDARD 99)
 
-set(SOURCE_FILES dix modules/frame modules/text)
+set(SOURCE_FILES dix modules/frame modules/text modules/buffer)
 add_library(dix ${SOURCE_FILES})

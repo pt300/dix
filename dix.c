@@ -159,6 +159,7 @@ void destroy_view(view_t *view) {
 	if(view->view_destroy != NULL) {
 		view->view_destroy(view);
 	}
+	free(view);
 }
 
 void render_view(view_t *view, render_buf_t *out) {

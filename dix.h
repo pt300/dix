@@ -52,5 +52,6 @@ void render(view_t *view);
 //basic modules
 #include "modules/frame.h"
 #include "modules/text.h"
+#include "modules/buffer.h"
 
 #endif //DIX_H

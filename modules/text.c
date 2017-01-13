@@ -9,7 +9,7 @@ typedef struct {
 
 void render_text(view_t *view, render_buf_t *out) {
 	WCHAR *str = ((text_data_t *) view->data)->string;
-	SHORT x, y, max_x, max_y;
+	UINT x, y, max_x, max_y;
 
 	if(str == NULL) {
 		return;
@@ -52,8 +52,8 @@ view_t *create_text_view(UINT x, UINT y, UINT width, UINT height) {
 	return view;
 }
 
-void text_view_text(view_t *window, WCHAR *text) {
-	text_data_t *data = window->data;
+void text_view_text(view_t *view, WCHAR *text) {
+	text_data_t *data = view->data;
 
 	if(data->string != NULL) {
 		free(data->string);
