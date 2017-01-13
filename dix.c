@@ -163,7 +163,7 @@ void view_set_destroy_function(view_t *view, view_destroy_func view_destroy) {
 
 void destroy_view(view_t *view) {
 	if(view->view_destroy != NULL) {
-		view->view_destroy(view);
+		view->view_destroy(view->data);
 	}
 	free(view);
 }

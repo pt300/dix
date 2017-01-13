@@ -66,7 +66,8 @@ void destroy_frame(void *data) {
 	frame_data_t *vdata;
 	UINT i;
 
-	for(i = 0, vdata = data; i < vdata->child_count; i++) {
+	vdata = data;
+	for(i = 0; i < vdata->child_count; i++) {
 		destroy_view(vdata->children[i]);
 	}
 	free(vdata->children);
