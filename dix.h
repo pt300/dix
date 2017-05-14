@@ -25,6 +25,9 @@
 
 #define SCREEN (void *)1 //flawless
 
+#define IS_BETWEENI(v, min, max) (v >= min && v <= max)
+#define IS_BETWEENE(v, min, max) (v > min && v < max)
+
 typedef enum {
 	OK, //is okay
 	GUESS, //hell

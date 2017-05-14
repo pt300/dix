@@ -208,15 +208,21 @@ void render(view_t *view) {
 		if(view == NULL) {
 			return;
 		}
-		out.buff = malloc(screen.width * screen.height * sizeof *out.buff);
 		out.width = screen.width;
 		out.height = screen.height;
+		if(out.width == 0 || out.height == 0) {
+			return;
+		}
+		out.buff = malloc(screen.width * screen.height * sizeof *out.buff);
 		wmemset(out.buff, L' ', screen.width * screen.height);
 	}
 	else {
-		out.buff = malloc(view->parent->width * view->parent->height * sizeof *out.buff);
 		out.width = view->parent->width;
 		out.height = view->parent->height;
+		if(out.width == 0 || out.height == 0) {
+			return;
+		}
+		out.buff = malloc(view->parent->width * view->parent->height * sizeof *out.buff);
 		wmemset(out.buff, L' ', view->parent->width * view->parent->height);
 	}
 

@@ -21,6 +21,9 @@
 
 typedef struct {
 	WCHAR borderchar;
+	WCHAR left, top, right, bottom;
+	WCHAR top_left, top_right, bottom_right, bottom_left;
+	border_style_t border_style;
 	boolean border;
 	UINT child_count;
 	view_t **children;
@@ -28,53 +31,98 @@ typedef struct {
 
 void render_frame(view_t *view, render_buf_t *out) {
 	frame_data_t *data;
-	UINT inner_w, inner_h, start_x, start_y;
-	UINT y, max_x, max_y;
-	int i;
+	UINT actual_width, actual_height;
+	UINT child_width, child_height;
+	UINT x, y;
+	size_t i;
 	render_buf_t ch;
 
 	data = view_get_data(view);
 
-	max_x = min(view->width + view->x, out->width);
-	max_y = min(view->height + view->y, out->height);
-	start_x = view->x;
-	start_y = view->y;
-	inner_w = max_x - start_x;
-	inner_h = max_y - start_y;
-
-	/*
-	 * What if start is out of view?
-	 */
-	if(inner_w == 0 || inner_h == 0) {
+	if(view->x >= out->width ||
+	   view->y >= out->height) {
 		return;
 	}
 
-	if(data->border) { //eh
-		wmemset(out->buff + start_x + out->width * start_y, data->borderchar, inner_w);
-		wmemset(out->buff + start_x + out->width * (start_y + inner_h - 1), data->borderchar, inner_w);
-		inner_h -= 2;
-		inner_w -= 2;
-		for(i = 0; i < inner_h; i++) {
-			out->buff[start_x + (i + start_y + 1) * out->width] = data->borderchar;
-			out->buff[start_x + (i + start_y + 1) * out->width + inner_w + 1] = data->borderchar;
+	child_width = actual_width = min(out->width - view->x, view->width);
+	child_height = actual_height = min(out->height - view->y, view->height);
+
+	x = view->x;
+	y = view->y;
+
+
+	/*
+	 * Border rendering ladder ifs, heh
+	 * TODO: Implement corner borders
+	 */
+	if(data->border) {
+		if(data->border_style == ONECHAR) {
+			wmemset(out->buff + x + out->width * y, data->borderchar, actual_width);
+			for(i = 1; i < actual_height - 1; i++) {
+				out->buff[x + (i + y) * out->width] = data->borderchar;
+			}
+
+			child_width--;
+			child_height--;
+
+			if(child_height != 0) {
+				wmemset(out->buff + x + out->width * (y + child_height), data->borderchar, actual_width);
+
+				child_height--;
+			}
+
+			if(child_width != 0) {
+				for(i = 1; i < actual_height - 1; i++) {
+					out->buff[x + (i + y) * out->width + child_width] = data->borderchar;
+				}
+
+				child_width--;
+			}
+
+			x++;
+			y++;
 		}
-		start_x++;
-		start_y++;
+		else {
+			wmemset(out->buff + x + out->width * y, data->top, actual_width);
+			for(i = 1; i < actual_height - 1; i++) {
+				out->buff[x + (i + y) * out->width] = data->left;
+			}
+
+			child_width--;
+			child_height--;
+
+			if(child_height != 0) {
+				wmemset(out->buff + x + out->width * (y + child_height), data->bottom, actual_width);
+
+				child_height--;
+			}
+
+			if(child_width != 0) {
+				for(i = 1; i < actual_height - 1; i++) {
+					out->buff[x + (i + y) * out->width + child_width] = data->right;
+				}
+
+				child_width--;
+			}
+
+			x++;
+			y++;
+		}
 	}
 
-	if(inner_h != 0 && inner_w != 0 && data->child_count > 0) {
-		ch.height = inner_h;
-		ch.width = inner_w;
-		ch.buff = malloc(inner_h * inner_w * sizeof *ch.buff);
-		wmemset(ch.buff, L' ', inner_h * inner_w);
+	if(child_height != 0 && child_width != 0 && data->child_count > 0) {
+		ch.height = child_height;
+		ch.width = child_width;
+		ch.buff = malloc(child_height * child_width * sizeof *ch.buff);
+		wmemset(ch.buff, L' ', child_height * child_width);
 
 		for(i = 0; i < data->child_count; i++) {
 			render_view(data->children[i], &ch);
 		}
 
-		for(y = 0; y < inner_h - 1; y++) {
-			memcpy(out->buff + start_x + (start_y + y) * out->width, ch.buff + (y * ch.width),
-				   inner_w * sizeof *ch.buff);
+		for(i = 0; i < child_height; i++) {
+			memcpy(out->buff + x + (y + i) * out->width, ch.buff + (y * ch.width),
+				   child_width * sizeof *ch.buff);
 		}
 
 		free(ch.buff);
@@ -110,8 +158,30 @@ void frame_view_border(view_t *view, boolean enable) {
 	((frame_data_t *) view_get_data(view))->border = enable;
 }
 
+void frame_view_border_style(view_t *view, border_style_t style) {
+	((frame_data_t *) view_get_data(view))->border_style = style;
+}
+
 void frame_view_border_char(view_t *view, WCHAR character) {
 	((frame_data_t *) view_get_data(view))->borderchar = character;
+}
+
+void frame_view_border_sides(view_t *view, WCHAR left, WCHAR top, WCHAR right, WCHAR bottom) {
+	frame_data_t *data = view_get_data(view);
+
+	data->left = left;
+	data->top = top;
+	data->right = right;
+	data->bottom = bottom;
+}
+
+void frame_view_border_corners(view_t *view, WCHAR top_left, WCHAR top_right, WCHAR bottom_right, WCHAR bottom_left) {
+	frame_data_t *data = view_get_data(view);
+
+	data->top_left = top_left;
+	data->top_right = top_right;
+	data->bottom_right = bottom_right;
+	data->bottom_left = bottom_left;
 }
 
 void frame_view_appendv(view_t *view, view_t *child) {

@@ -34,6 +34,9 @@ typedef enum {
 view_t *create_frame_view(UINT x, UINT y, UINT width, UINT height);
 void frame_view_border(view_t *view, boolean enable);
 void frame_view_border_char(view_t *view, WCHAR character);
+void frame_view_border_sides(view_t *view, WCHAR left, WCHAR top, WCHAR right, WCHAR bottom);
+void frame_view_border_corners(view_t *view, WCHAR top_left, WCHAR top_right, WCHAR bottom_right, WCHAR bottom_left);
+void frame_view_border_style(view_t *view, border_style_t style);
 void frame_view_appendv(view_t *view, view_t *child);
 boolean frame_view_removev(view_t *view, view_t *child);
 boolean frame_view_destroyv(view_t *view, view_t *child);
