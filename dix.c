@@ -188,7 +188,9 @@ void destroy_view(view_t *view) {
 }
 
 void render_view(view_t *view, render_buf_t *out) {
-	if(view->view_render != NULL) {
+	if(view->view_render != NULL &&
+	   view->width != 0 &&
+	   view->height != 0) {
 		view->view_render(view, out);
 	}
 }
@@ -201,7 +203,8 @@ void render(view_t *view) {
 	SHORT row;
 	DWORD DONTCARE;
 
-	set_screen_size(screen.width, screen.height); //just to be sure I guess
+	//set_screen_size(screen.width, screen.height); //just to be sure I guess
+	//no
 
 	if(view == NULL || view == SCREEN || view->parent == SCREEN) {
 		view = screen.child;
@@ -210,18 +213,12 @@ void render(view_t *view) {
 		}
 		out.width = screen.width;
 		out.height = screen.height;
-		if(out.width == 0 || out.height == 0) {
-			return;
-		}
 		out.buff = malloc(screen.width * screen.height * sizeof *out.buff);
 		wmemset(out.buff, L' ', screen.width * screen.height);
 	}
 	else {
 		out.width = view->parent->width;
 		out.height = view->parent->height;
-		if(out.width == 0 || out.height == 0) {
-			return;
-		}
 		out.buff = malloc(view->parent->width * view->parent->height * sizeof *out.buff);
 		wmemset(out.buff, L' ', view->parent->width * view->parent->height);
 	}

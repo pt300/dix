@@ -117,11 +117,15 @@ void render_frame(view_t *view, render_buf_t *out) {
 		wmemset(ch.buff, L' ', child_height * child_width);
 
 		for(i = 0; i < data->child_count; i++) {
+			if(data->children[i]->height == 0 ||
+			   data->children[i]->width == 0) {
+				continue;
+			}
 			render_view(data->children[i], &ch);
 		}
 
 		for(i = 0; i < child_height; i++) {
-			memcpy(out->buff + x + (y + i) * out->width, ch.buff + (y * ch.width),
+			memcpy(out->buff + x + (y + i) * out->width, ch.buff + (i * ch.width),
 				   child_width * sizeof *ch.buff);
 		}
 

@@ -20,42 +20,88 @@
 #include "text.h"
 
 /*
- * TODO: text position
+ * TODO: text gravity
  */
 typedef struct {
+	//text_gravity_t gravity;
+	BOOLEAN wrap;
 	WCHAR *string;
 } text_data_t;
 
-void render_text(view_t *view, render_buf_t *out) {
-	WCHAR *str = ((text_data_t *) view->data)->string;
-	UINT x, y, max_x, max_y;
+static inline size_t llen(WCHAR *str) {
+	size_t ret;
 
-	if(str == NULL) {
+	for(ret = 0; *str != L'\0' && *str != L'\n'; str++, ret++);
+
+	return ret;
+}
+
+void render_text(view_t *view, render_buf_t *out) {
+	text_data_t *data = view_get_data(view);
+	WCHAR *str = data->string;
+	UINT x, y, width, height;
+	size_t iy, iw, tw, line_len;
+
+	if(str == NULL ||
+	   view->x >= out->width ||
+	   view->y >= out->height) {
 		return;
 	}
 
-	max_x = min(view->width + view->x, out->width);
-	max_y = min(view->height + view->y, out->height);
+	width = min(out->width - view->x, view->width);
+	height = min(out->height - view->y, view->height);
 	x = view->x;
 	y = view->y;
 
-	while(*str != L'\0' && y < max_y) {
+	iy = 0;
+	if(*str == L'\n') {
+		iy = 1;
+	}
+
+	while(*str != L'\0') {
 		if(*str == L'\n') {
-			y++;
-			x = view->x;
+			str++;
 		}
-		else {
-			if(x < max_x) {
-				out->buff[x++ + y * out->width] = *str;
+		line_len = llen(str);
+
+		if(line_len > width) {
+			if(data->wrap) {
+				for(iw = 0, tw = line_len / width; iy != height && iw != tw; iy++, iw++) {
+					wmemcpy(out->buff + x + (y + iy) * out->width, str + iw * width, width);
+				}
+				if(line_len % width != 0 && iy != height) {
+					wmemcpy(out->buff + x + (y + iy) * out->width, str + iw * width,
+							line_len - iw * width);
+				}
+				else {
+					iy--;
+				}
+			}
+			else {
+				wmemcpy(out->buff + x + (y + iy) * out->width, str, width);
 			}
 		}
-		str++;
+		else {
+			wmemcpy(out->buff + x + (y + iy) * out->width, str, line_len);
+		}
+
+		if(++iy == height) {
+			return;
+		}
+		str += line_len;
 	}
 }
 
+void text_view_wrap(view_t *view, BOOLEAN wrap) {
+	((text_data_t *) view_get_data(view))->wrap = wrap;
+}
+
+
 void destroy_text(void *data) {
-	if(((text_data_t *) data)->string) {
-		free(((text_data_t *) data)->string);
+	text_data_t *tdata = data;
+
+	if(tdata->string) {
+		free(tdata->string);
 	}
 	free(data);
 }
@@ -72,7 +118,7 @@ view_t *create_text_view(UINT x, UINT y, UINT width, UINT height) {
 }
 
 void text_view_text(view_t *view, WCHAR *text) {
-	text_data_t *data = view->data;
+	text_data_t *data = view_get_data(view);
 
 	if(data->string != NULL) {
 		free(data->string);

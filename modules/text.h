@@ -22,7 +22,15 @@
 
 #include "../dix.h"
 
+/*typedef enum {
+	LEFT,
+	CENTER,
+	RIGHT
+} text_gravity_t;*/
+
 view_t *create_text_view(UINT x, UINT y, UINT width, UINT height);
 void text_view_text(view_t *view, WCHAR *text);
+//void text_view_gravity(view_t *view, text_gravity_t gravity);
+void text_view_wrap(view_t *view, BOOLEAN wrap);
 
 #endif //DIX_TEXT_H
