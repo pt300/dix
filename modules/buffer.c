@@ -19,6 +19,11 @@
 
 #include "buffer.h"
 
+/*
+ * TODO: Rewrite
+ * TODO: Add gravity
+ */
+
 typedef struct {
 	WCHAR *data;
 	UINT width, height;

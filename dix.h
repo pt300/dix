@@ -74,8 +74,12 @@ void render_view(view_t *view, render_buf_t *out);
 void render(view_t *view);
 
 //basic modules
+#include "modules/common.h"
+
 #include "modules/frame.h"
 #include "modules/text.h"
 #include "modules/buffer.h"
+
+
 
 #endif //DIX_H

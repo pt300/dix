@@ -17,14 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef DIX_TEXT_H
-#define DIX_TEXT_H
+#ifndef DIX_COMMON_H
+#define DIX_COMMON_H
 
-#include "../dix.h"
+/*
+ * This header file will contain enums and other things that aren't directly part of dix
+ * but are used or would be useful for other modules.
+ */
 
-view_t *create_text_view(UINT x, UINT y, UINT width, UINT height);
-void text_view_text(view_t *view, WCHAR *text);
-void text_view_gravity(view_t *view, gravity_horizontal_t gravity);
-void text_view_wrap(view_t *view, BOOLEAN wrap);
+typedef enum {
+	LEFT,
+	CENTERH,
+	RIGHT
+} gravity_horizontal_t;
 
-#endif //DIX_TEXT_H
+typedef enum {
+	TOP,
+	CENTERV,
+	BOTTOM
+} gravity_vertical_t;
+
+#endif //DIX_COMMON_H

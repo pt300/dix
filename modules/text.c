@@ -20,7 +20,7 @@
 #include "text.h"
 
 typedef struct {
-	text_gravity_t gravity;
+	gravity_horizontal_t gravity;
 	BOOLEAN wrap;
 	WCHAR *string;
 } text_data_t;
@@ -33,10 +33,10 @@ static inline size_t llen(WCHAR *str) {
 	return ret;
 }
 
-static inline size_t gravity_shift(text_gravity_t gravity, size_t width, size_t length) {
+static inline size_t gravity_shift(gravity_horizontal_t gravity, size_t width, size_t length) {
 	size_t shift;
 
-	if(gravity == CENTER) {
+	if(gravity == CENTERH) {
 		shift = width - length;
 		shift /= 2;
 	}
