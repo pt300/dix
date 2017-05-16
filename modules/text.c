@@ -19,11 +19,8 @@
 
 #include "text.h"
 
-/*
- * TODO: text gravity
- */
 typedef struct {
-	//text_gravity_t gravity;
+	text_gravity_t gravity;
 	BOOLEAN wrap;
 	WCHAR *string;
 } text_data_t;
@@ -34,6 +31,23 @@ static inline size_t llen(WCHAR *str) {
 	for(ret = 0; *str != L'\0' && *str != L'\n'; str++, ret++);
 
 	return ret;
+}
+
+static inline size_t gravity_shift(text_gravity_t gravity, size_t width, size_t length) {
+	size_t shift;
+
+	if(gravity == CENTER) {
+		shift = width - length;
+		shift /= 2;
+	}
+	else if(gravity == RIGHT) {
+		shift = width - length;
+	}
+	else {
+		shift = 0;
+	}
+
+	return shift;
 }
 
 void render_text(view_t *view, render_buf_t *out) {
@@ -70,8 +84,8 @@ void render_text(view_t *view, render_buf_t *out) {
 					wmemcpy(out->buff + x + (y + iy) * out->width, str + iw * width, width);
 				}
 				if(line_len % width != 0 && iy != height) {
-					wmemcpy(out->buff + x + (y + iy) * out->width, str + iw * width,
-							line_len - iw * width);
+					wmemcpy(out->buff + x + gravity_shift(data->gravity, width, line_len - iw * width) + (y + iy) * out->width,
+							str + iw * width, line_len - iw * width);
 				}
 				else {
 					iy--;
@@ -82,7 +96,8 @@ void render_text(view_t *view, render_buf_t *out) {
 			}
 		}
 		else {
-			wmemcpy(out->buff + x + (y + iy) * out->width, str, line_len);
+			wmemcpy(out->buff + x + gravity_shift(data->gravity, width, line_len) + (y + iy) * out->width, str,
+					line_len);
 		}
 
 		if(++iy == height) {
@@ -94,6 +109,10 @@ void render_text(view_t *view, render_buf_t *out) {
 
 void text_view_wrap(view_t *view, BOOLEAN wrap) {
 	((text_data_t *) view_get_data(view))->wrap = wrap;
+}
+
+void text_view_gravity(view_t *view, text_gravity_t gravity) {
+	((text_data_t *) view_get_data(view))->gravity = gravity;
 }
 
 

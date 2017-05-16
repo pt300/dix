@@ -53,7 +53,6 @@ void render_frame(view_t *view, render_buf_t *out) {
 
 	/*
 	 * Border rendering ladder ifs, heh
-	 * TODO: Implement corner borders
 	 */
 	if(data->border) {
 		if(data->border_style == ONECHAR) {
@@ -84,6 +83,7 @@ void render_frame(view_t *view, render_buf_t *out) {
 		}
 		else {
 			wmemset(out->buff + x + out->width * y, data->top, actual_width);
+
 			for(i = 1; i < actual_height - 1; i++) {
 				out->buff[x + (i + y) * out->width] = data->left;
 			}
@@ -103,6 +103,13 @@ void render_frame(view_t *view, render_buf_t *out) {
 				}
 
 				child_width--;
+			}
+
+			if(data->border_style == SIDESANDCORNERS) {
+				out->buff[x + actual_width - 1 + (actual_height + y - 1) * out->width] = data->bottom_right;
+				out->buff[x + actual_width - 1 + out->width * y] = data->top_right;
+				out->buff[x + (actual_height + y - 1) * out->width] = data->bottom_left;
+				out->buff[x + out->width * y] = data->top_left;
 			}
 
 			x++;

@@ -140,6 +140,11 @@ view_t *attach_to_screen(view_t *view) {
 	return previous;
 }
 
+void view_set_size(view_t *view, UINT width, UINT height) {
+	view->width = width;
+	view->height = height;
+}
+
 void view_set_pos(view_t *view, UINT x, UINT y) {
 	view->x = x;
 	view->y = y;

@@ -65,6 +65,7 @@ void *view_get_data(view_t *view);
 void view_set_data(view_t *view, void *data);
 void view_set_render_function(view_t *view, view_render_func module_render);
 void view_set_destroy_function(view_t *view, view_destroy_func module_destroy);
+void view_set_size(view_t *view, UINT width, UINT height);
 void view_set_pos(view_t *view, UINT x, UINT y);
 void view_set_pos_relative(view_t *view, int x, int y);
 void destroy_view(view_t *view);
