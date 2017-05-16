@@ -158,6 +158,17 @@ view_t *create_frame_view(UINT x, UINT y, UINT width, UINT height) {
 
 	data->children = malloc(sizeof(view_t));
 
+	/*
+	 * WEW
+	 */
+	data->borderchar = L'*';
+	data->left = data->right = L'│';
+	data->top = data->bottom = L'─';
+	data->top_left = L'┌';
+	data->top_right = L'┐';
+	data->bottom_right = L'┘';
+	data->bottom_left = L'└';
+
 	view_set_data(view, data);
 	view_set_render_function(view, render_frame);
 	view_set_destroy_function(view, destroy_frame);

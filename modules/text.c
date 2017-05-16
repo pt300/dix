@@ -111,7 +111,7 @@ void text_view_wrap(view_t *view, BOOLEAN wrap) {
 	((text_data_t *) view_get_data(view))->wrap = wrap;
 }
 
-void text_view_gravity(view_t *view, text_gravity_t gravity) {
+void text_view_gravity(view_t *view, gravity_horizontal_t gravity) {
 	((text_data_t *) view_get_data(view))->gravity = gravity;
 }
 
